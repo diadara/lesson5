@@ -1,2 +1,7 @@
 [
+{
+  "directory": "/home/diadara/projects/opengl/nehe/lesson5",
+  "command": "g++ -Wall -I/usr/include/ -c -o lesson5.o lesson5.c",
+  "file": "/home/diadara/projects/opengl/nehe/lesson5/lesson5.c"
+}
 ]

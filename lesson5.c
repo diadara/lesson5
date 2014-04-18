@@ -11,14 +11,18 @@
 #include <GL/glu.h>	// Header File For The GLu32 Library
 #include <unistd.h>     // needed to sleep
 #include <stdio.h>
+#include<math.h>
+
 /* ASCII code for the escape key. */
 #define ESCAPE 27
 
 #define hdistance 2.0f
 #define nradius  0.4f
-#define hradius  0.1f
+#define hradius  0.05f
 #define ndistance  3.0f
 #define nangle 30.0f
+#define RANGLE 5
+float PIby180 = 3.14/180;
 /* The number of our GLUT window */
 int window; 
 
@@ -26,7 +30,7 @@ float z = 0.0f;
 float rx = 0.0f;
 float ry = 0.0f;
 float rz = 0.0f;
-
+float tr = 0.0f;
 
 
 
@@ -67,11 +71,21 @@ void ReSizeGLScene(int Width, int Height)
 
 /* The main drawing function. */
 void DrawGLScene()
-{  
+{
+
+  //  GLfloat y;        // Storage for varying Y coordinate
+  //  GLfloat fSizes[2];      // Line width range metrics
+  //  GLfloat fCurrSize;      // Save current size
+  //  glGetFloatv(GL_LINE_WIDTH_RANGE,fSizes);
+  //  fCurrSize = fSizes[0];
+  //  printf("\n line width range %f %f",fSizes[0],fSizes[1]);
+
+
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
   glLoadIdentity();				// Reset The View
 
   glTranslatef(0.0f,0.0f,z);	/* For zooming */
+  glTranslatef(tr,0.0f,0.0f);
   glRotatef(ry,0.0f,1.0f,0.0f);	/* For rotation along y axis */
   glRotatef(rx,1.0f,0.0f,0.0f);	/* For rotation along x axis */
   glRotatef(rz,0.0f,0.0f,1.0f);	/* For rotation along z axis */
@@ -83,7 +97,6 @@ void DrawGLScene()
       // draw a pyramid (in smooth coloring mode)
 
       glPushMatrix();
-      
       glTranslatef(-hdistance,0.0f,0.0f);
       glColor3f(0.0f,0.0f,1.0f);			// Blue
       glutSolidSphere(nradius, 100, 100);
@@ -100,7 +113,19 @@ void DrawGLScene()
       glColor3f(1.0f,0.0f,0.0f);			// Red
       glutSolidSphere(nradius, 100, 100);
       glPopMatrix();
- 
+
+      glColor3f(0.0f,1.0f,1.0f);
+      glLineWidth(5.0f);
+      glBegin(GL_LINES);
+      glVertex3f(hdistance,0.0f,0.0f);
+      glVertex3f(hdistance*cos(nangle *PIby180),hdistance*sin(nangle *PIby180),ndistance);
+
+
+      glVertex3f(-hdistance,0.0f,0.0f);
+      glVertex3f(-hdistance*cos(nangle *PIby180),-hdistance*sin(nangle *PIby180),ndistance);
+      
+      
+      glEnd();
     }
   /* rtri+=0.20f;					// Increase The Rotation Variable For The Pyramid */
   /* rquad-=0.20f;					// Decrease The Rotation Variable For The Cube */
@@ -131,23 +156,29 @@ void keyPressed(unsigned char key, int x, int y)
     case 'Z':
       z += 0.1f;
       break;
-    case 'Q':
-      rx += 15;
+    case 't':
+      tr -= 0.1f;
+      break;
+    case 'T':
+      tr += 0.1f;
+      break;
+      case 'Q':
+      rx += RANGLE;
       break;
     case 'q':
-      rx-= 15;
+      rx-= RANGLE;
       break;
     case 'W':
-      ry += 15;
+      ry += RANGLE;
       break;
     case 'w':
-      ry-= 15;
+      ry-= RANGLE;
       break;
     case 'E':
-      rz += 15;
+      rz += RANGLE;
       break;
     case 'e':
-      rz-= 15;
+      rz-= RANGLE;
       break;
     
     
