@@ -8,5 +8,8 @@ LIBRARIES = -lX11 -lXi -lXmu -lglut -lGL -lGLU -lm
 
 dna: dna.cpp
 	$(CC) $(CFLAGS) -o $@ $(LIBDIR) dna.cpp $(LIBRARIES)  
+	
+dna2: dna2.cpp
+	$(CC) $(CFLAGS) -o $@ $(LIBDIR) dna2.cpp $(LIBRARIES)  
 
 
