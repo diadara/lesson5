@@ -31,6 +31,56 @@ float tr = 0.0f;
 
 static char  text1[30] = "DNA Visualiser";
 
+
+void colorpicker(char c){
+  switch(c){
+  case 'a':
+  case 'A':
+    glColor3f(1.0f,0.0f,0.0f );//red
+    break;
+case 't':
+  case 'T':
+    glColor3f(0.0f,1.0f,0.0f );
+    break;
+case 'g':
+  case 'G':
+    glColor3f(0.0f,0.0f,1.0f );
+    break;
+case 'c':
+  case 'C':
+    glColor3f(0.6f,0.7f,0.5f );
+    break;
+  default:
+    cout<<"Invalid neucleotide sequence";
+    exit(1);
+    break;
+
+
+  }}
+char compliment(char c){
+  switch(c){
+  case 'a':
+  case 'A':
+    return 'c';
+    break;
+case 't':
+  case 'T':
+    return 'g';
+    break;
+  case 'g':
+  case 'G':
+    return 't';
+    break;
+  case 'c':
+  case 'C':
+    return 'a';
+    break;
+  default:
+    cout<<"Invalid neucleotide sequence";
+    exit(1);
+    break;
+
+  }}
 /* rotation angle for the triangle. */
 
 
@@ -85,14 +135,15 @@ void DrawGLScene()
 	
   
   glLoadIdentity();				// Reset The View
-
+  glTranslatef(0.0f,0.0f,-20.0f);	/* For zooming */
+  glRotatef(90,0.0f,1.0f,0.0f);
   glTranslatef(0.0f,0.0f,z);	/* For zooming */
   glTranslatef(tr,0.0f,0.0f);
   glRotatef(ry,0.0f,1.0f,0.0f);	/* For rotation along y axis */
   glRotatef(rx,1.0f,0.0f,0.0f);	/* For rotation along x axis */
   glRotatef(rz,0.0f,0.0f,1.0f);	/* For rotation along z axis */
 
-  for(int i =0;i<dnasequence.length();i++)
+  for(unsigned int i =0;i<dnasequence.length();i++)
     {
       glRotatef(nangle,0.0f,0.0f,1.0f);
       glTranslatef(0.0f,0.0f,ndistance);
@@ -100,19 +151,19 @@ void DrawGLScene()
 
       glPushMatrix();
       glTranslatef(-hdistance,0.0f,0.0f);
-      glColor3f(0.0f,0.0f,1.0f);			// Blue
+      colorpicker(dnasequence[i]);
       glutSolidSphere(nradius, 100, 100);
       GLUquadricObj *p = gluNewQuadric();
       gluQuadricDrawStyle(p,GLU_LINE);
       glPushMatrix();
       glRotatef(90,0.0,1.0f,0.0f );
-      glColor3f(0.0f,1.0f,0.0f);
+      glColor3f(1.0f,0.0f,1.0f);
       gluCylinder(p,hradius,hradius,2*hdistance,100,100);
       glPopMatrix();
 
   
       glTranslatef(2*hdistance,0.0f,0.0f);
-      glColor3f(1.0f,0.0f,0.0f);			// Red
+      colorpicker(compliment(dnasequence[i]));
       glutSolidSphere(nradius, 100, 100);
       glPopMatrix();
 
@@ -230,7 +281,7 @@ int main(int argc, char **argv)
   glutDisplayFunc(&DrawGLScene);  
 
   /* Go fullscreen.  This is as soon as possible. */
-  glutFullScreen();
+  //  glutFullScreen();
 
   /* Even if there are no events, redraw our gl scene. */
   glutIdleFunc(&DrawGLScene);

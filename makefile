@@ -6,7 +6,7 @@ CC = g++
 CFLAGS = $(COMPILERFLAGS) $(INCLUDE)
 LIBRARIES = -lX11 -lXi -lXmu -lglut -lGL -lGLU -lm 
 
-dna:
+dna: dna.cpp
 	$(CC) $(CFLAGS) -o $@ $(LIBDIR) dna.cpp $(LIBRARIES)  
 
 
