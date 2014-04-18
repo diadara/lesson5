@@ -1,17 +1,13 @@
-//
-// This code was created by Jeff Molofee '99 (ported to Linux/GLUT by Richard Campbell '99)
-//
-// If you've found this code useful, please let me know.
-//
-// Visit me at www.demonews.com/hosted/nehe 
-// (email Richard Campbell at ulmont@bellsouth.net)
-//
 #include <GL/glut.h>    // Header File For The GLUT Library 
 #include <GL/gl.h>	// Header File For The OpenGL32 Library
 #include <GL/glu.h>	// Header File For The GLu32 Library
 #include <unistd.h>     // needed to sleep
 #include <stdio.h>
 #include<math.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
 
 /* ASCII code for the escape key. */
 #define ESCAPE 27
@@ -22,10 +18,10 @@
 #define ndistance  3.0f
 #define nangle 30.0f
 #define RANGLE 5
-float PIby180 = 3.14/180;
+float PIby180 = 3.14159/180;
 /* The number of our GLUT window */
 int window; 
-
+string dnasequence;
 float z = 0.0f;
 float rx = 0.0f;
 float ry = 0.0f;
@@ -33,6 +29,7 @@ float rz = 0.0f;
 float tr = 0.0f;
 
 
+static char  text1[30] = "DNA Visualiser";
 
 /* rotation angle for the triangle. */
 
@@ -82,6 +79,11 @@ void DrawGLScene()
 
 
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
+
+  glRasterPos3f(9.0f , 3.0f ,0.0f);
+  //  glutBitmapString( GLUT_BITMAP_HELVETICA_18 , "Hello World!" );
+	
+  
   glLoadIdentity();				// Reset The View
 
   glTranslatef(0.0f,0.0f,z);	/* For zooming */
@@ -90,7 +92,7 @@ void DrawGLScene()
   glRotatef(rx,1.0f,0.0f,0.0f);	/* For rotation along x axis */
   glRotatef(rz,0.0f,0.0f,1.0f);	/* For rotation along z axis */
 
-  for(int i =0;i<20;i++)
+  for(int i =0;i<dnasequence.length();i++)
     {
       glRotatef(nangle,0.0f,0.0f,1.0f);
       glTranslatef(0.0f,0.0f,ndistance);
@@ -192,6 +194,20 @@ int main(int argc, char **argv)
 {  
   /* Initialize GLUT state - glut will take any command line arguments that pertain to it or 
      X Windows - look at its documentation at http://reality.sgi.com/mjk/spec3/spec3.html */  
+
+
+  ifstream myfile;
+  myfile.open("dna.txt");
+  if (myfile.is_open())
+    {
+      myfile >> dnasequence;
+    }
+  else
+    {
+      cout<<endl<<"Dna sequence file dna.txt not found";
+      exit(1);
+    }
+
   glutInit(&argc, argv);  
 
   /* Select type of Display mode:   
