@@ -1,0 +1,69 @@
+Approach to the solution.
+
+Deoxyribonucleic acid (DNA) is a molecule that encodes the genetic
+instructions used in the development and functioning of all known
+living organisms and many viruses. DNA is a nucleic acid; alongside
+proteins and carbohydrates, nucleic acids compose the three major
+macromolecules essential for all known forms of life. Most DNA
+molecules consist of two biopolymer strands coiled around each other
+to form a double helix. The two DNA strands are known as
+polynucleotides since they are composed of simpler units called
+nucleotides. Each nucleotide is composed of a nitrogen-containing
+nucleobase—either guanine (G), adenine (A), thymine (T), or cytosine
+(C)
+
+
+Here, we will be using 3 different approaches to visualize the DNA
+molecule.
+
+Mode 1:
+
+The double helix structure is visualized using solid spheres which
+will represent the nucleotides with different colors for representing
+the four different types which compose the DNA molecule.The link
+between two nucleotides on the same strand are represented using a
+straight line to represent the polynucleotide strand. Every nucleotide
+will have a compliment nucleotide in the second strand and and they
+will be connected by a hydrogen bond to get the ladder structure.
+We will be representing the hydrogen bonds using cylinders build from
+opengl quadric structures. The double helix structure is achieved by
+employing a series of transformations before drawing the primitives.
+
+Steps involved:
+
+1. draw the initials sphere
+2. rotate the model matrix by 90 degrees about y axis 
+3 draw a cylinder of height h to obtain the hydrogen bond
+4. translate the model matrix by a distance h/2 .
+5. Draw the link to the next sphere in the next level by drawing a
+   line between (h,0,0) and (h*cos(T),h*sin(T),nh) where T is the
+   projected angle and nh the vertical distance between two
+   consecutive nucleotides.
+6.Translate the model matrix by h/2 and draw the second sphere.
+7. translate the matrix back to initial positon.
+8. translate the matrix in z direction by nh.
+9. repeat the steps for all the nucleotides
+
+Mode2:
+base visualization
+
+In this mode we will represent the bases using horizontal and vertical
+cylinders and make a flat structure which will be easier to study
+
+
+
+Mode3:
+Molecular visualization
+
+Here we will approximate the nucleotides electron clouds using
+spheres and arrange them in their place  to get an idea about the
+electron cloud of the molecule.
+
+
+We will be making use of geometric translations and rotations to
+implement the pan and zoom functionality in  our model.
+Zooming is implimented by translating the molecule in the z direction
+about the origin. Pan functionality by translating about x and y
+directions. And the molecule can be rotated by direct rotations to the
+model matrix itself
+

@@ -1,0 +1,11 @@
+README:
+
+The programe uses opengl and is written in cpp.It will run on linux with
+opengl and glut installed.
+
+to compile source code cd into the source folder and run make
+
+to run the program run ./dna2 from commandline
+
+the programme reads neucleotide sequences from dna.txt file
+fill it with the required sequence

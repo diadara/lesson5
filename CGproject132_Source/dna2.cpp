@@ -1,10 +1,14 @@
 //#include <windows.h>
 #include <iostream>
+#include<fstream>
+#include<string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
+
+using namespace std;
 
 const float CIRCLE = 3.14159/180;
 static float d=0, z=1.0, r=0.0, t=0.0;
@@ -20,14 +24,27 @@ static char text2[70]="The DNA double helix is stabilized by hydrogen bonds betw
 static char text3[70]="the bases attached to the two strands. The four bases found in";
 static char text4[70]="DNA are adenine(A), cytosine(C), guanine(G) and thymine (T)";
 static char text5[70]="These four bases are attached to the sugar/phosphate to form ";
-static char text6[70]="the complete nucleotide.";
+static char text6[70]="the complete nucleotide. Switch view modes using n/N/L";
 static char menu1[30]="key";
 static char menu2[30]= "Z/z : Zoom out/in";
 static char menu3[30]= "R/r : Y axis Rotate";
 static char menu4[30]= "T/t : X axis Rotate";
 static char menu5[30]= "c : Restore Default Value";
 
-static char Dna[1000000]="";
+
+
+
+#define hdistance 2.0f
+#define nradius  0.4f
+#define hradius  0.05f
+#define ndistance  3.0f
+#define nangle 30.0f
+#define RANGLE 2
+float PIby180 = 3.14159/180;
+string dnasequence;
+
+
+
 static int length=9;
 
 void createMenu(void);
@@ -37,6 +54,95 @@ void disp(void);
 bool _highShininess = false;
 bool _lowSpecularity = false;
 bool _emission = true;
+
+
+
+
+void setupmaterial(float r, float g , float b)
+{
+	float specularity;
+	if (_lowSpecularity) {
+		specularity = 0.3;
+	}
+	else {
+		specularity = 1.5;
+	}
+	float emissivity;
+	if (_emission) {
+		emissivity = 0.03;
+	}
+	else {
+		emissivity = 0;
+	}
+	float shininess;
+	if (_highShininess) {
+		shininess = 25;
+	}
+	else {
+		shininess = 12;
+	}
+	GLfloat materialColor[] = {r, g, b, 1.0};
+	GLfloat materialSpecular[] = {specularity, specularity, specularity, 1.0};
+	GLfloat materialEmission[] = {emissivity, emissivity, emissivity, 1.0};
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColor);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+	glMaterialfv(GL_FRONT, GL_EMISSION, materialEmission);
+	glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+
+}
+
+void colorpicker(char c){
+  switch(c){
+  case 'a':
+  case 'A':
+    setupmaterial(1.0f,0.0f,0.0f );//red
+    break;
+case 't':
+  case 'T':
+    setupmaterial(0.0f,1.0f,0.0f );
+    break;
+case 'g':
+  case 'G':
+    setupmaterial(0.0f,0.0f,1.0f );
+    break;
+case 'c':
+  case 'C':
+    setupmaterial(0.6f,0.7f,0.5f );
+    break;
+  default:
+    cout<<"Invalid neucleotide sequence";
+    exit(1);
+    break;
+
+
+  }}
+char compliment(char c){
+  switch(c){
+  case 'a':
+  case 'A':
+    return 'c';
+    break;
+case 't':
+  case 'T':
+    return 'g';
+    break;
+  case 'g':
+  case 'G':
+    return 't';
+    break;
+  case 'c':
+  case 'C':
+    return 'a';
+    break;
+  default:
+    cout<<"Invalid neucleotide sequence";
+    exit(1);
+    break;
+
+  }}
+/* rotation angle for the triangle. */
+
+
 
 void createMenu(void){
   submenid = glutCreateMenu(menu);
@@ -66,9 +172,14 @@ void handleKeypress(unsigned char key, int x, int y) {
        glutPostRedisplay();
       break;
     case 'N':
-      primitive = 3;
+       primitive = 3;
        glutPostRedisplay();
        break;
+    case 'l':
+       primitive = 4;
+       glutPostRedisplay();
+       break;
+
     case 27:
 			exit(0);
 			break;
@@ -274,7 +385,7 @@ void drawModel2(int mode) {
 	if (mode==0)  {
 		glColor3f(0.0,0.0,0.0);
 		for(int i=0;i<length;i+=1){
-			char acid=Dna[i];
+			char acid=dnasequence[i];
 			switch(acid){
 			case 'A':
 				draw_cylinder_object(0.2, 0 , (i/1.5) , 1  ,'p');
@@ -309,226 +420,149 @@ void drawModel2(int mode) {
 		draw_circle_object(0,  0.2, (6/1.7) , -0.3  ,'w');
 	}
 }
-void drawModel(int mode) {
-	if (mode==0)  {
-		glColor3f(0.0,0.0,0.0);
-		for(double i = -10 ; i < 11 ; i+=4){
-			draw_cylinder_object(0.2, 0 , (i/1.5) , 1  ,'p');
-			draw_cylinder_object(0.2, 0 , (i/1.5) , 2+0.5  ,'g');
-		}
-		for(double i = -10 ; i < 11 ; i+=2){
-			draw_cylinder_object(0.2, 0 , (i/1.5) , 1  ,'r');
-			draw_cylinder_object(0.2, 0 , (i/1.5) , 2+0.5  ,'b');
-		}
-		for(double i = -10 ; i < 11 ; i++){
-			draw_cylinder_object(0.3, 0 , (i/1.5)+0.5 , 1  ,'y');
-			draw_cylinder_object(0.3, 0 , (i/1.5)+0.5 , 4  ,'y');
-		}
-		draw_circle_object(0,  0.2, (6/1.7) , -0.3  ,'w');
-	} else if (mode==1) {
-        glColor3f(0.0,0.0,0.0);
-		draw_circle_object(0.4, -1 , (-10/1.4) , 0  ,'y');
-		draw_circle_object(0.4, 1 , (-9/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4, -1 , (-8/1.6) , -0.5  ,'y');
-		draw_circle_object(0.4, 1 , (-7/1.4) , 0  ,'y');
-		draw_circle_object(0.4, -1, (-6/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4, 1, (-5/1.6) , -0.5  ,'y');
-		draw_circle_object(0.4, -1, (-4/1.4) , 0  ,'y');
-		draw_circle_object(0.4, 1, (-3/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4,  -1, (-2/1.4) , 0  ,'y');
-		draw_circle_object(0.4,  1, (-1/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4,  -1 , (0/1.4) , 0  ,'y');
-		draw_circle_object(0.4,  1, (1/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4,  -1, (2/1.4) , 0  ,'y');
-		draw_circle_object(0.4,  -1, (3/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4,  1, (4/1.6) , -0.5  ,'y');
-		draw_circle_object(0.4,  -1, (5/1.4) , 0  ,'y');
-		draw_circle_object(0.4,  1, (6/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4,  -1, (7/1.6) , -0.5  ,'y');
-		draw_circle_object(0.4,  1, (8/1.4) , 0  ,'y');
-		draw_circle_object(0.4,  -1, (9/1.5) , 0.5  ,'y');
-		draw_circle_object(0.4, -0.2 , (-10/1.4) , 0  ,'r');
-		draw_circle_object(0.4, -0.3 , (-9/1.5) , 0  ,'g');
-		draw_circle_object(0.4, -0.4 , (-8/1.6) , -0.5  ,'p');
-		draw_circle_object(0.4, -0.3 , (-7/1.4) , 0  ,'b');
-		draw_circle_object(0.4, -0.4, (-6/1.5) , 0.5  ,'r');
-		draw_circle_object(0.4, -0.5, (-5/1.6) , -0.5  ,'g');
-		draw_circle_object(0.4, -0.4, (-4/1.4) , 0  ,'p');
-		draw_circle_object(0.4,  -0.3, (-3/1.5) , 0.5  ,'b');
-		draw_circle_object(0.4,  -0.2, (-2/1.4) , 0  ,'r');
-		draw_circle_object(0.4,  -0.1, (-1/1.5) , 0.5  ,'g');
-		draw_circle_object(0.4,  0 , (0/1.4) , 0  ,'p');
-		draw_circle_object(0.4,  0.1, (1/1.5) , 0.5  ,'b');
-		draw_circle_object(0.4,  0.2, (2/1.4) , 0  ,'r');
-		draw_circle_object(0.4,  0.1, (3/1.5) , 0.5  ,'g');
-		draw_circle_object(0.4,  0.1, (4/1.6) , -0.5  ,'p');
-		draw_circle_object(0.4,  0, (5/1.4) , 0  ,'b');
-		draw_circle_object(0.4,  -0.1, (6/1.5) , 0.5  ,'r');
-		draw_circle_object(0.4,  -0.2, (7/1.6) , -0.5  ,'g');
-		draw_circle_object(0.4,  -0.3, (8/1.4) , 0  ,'p');
-		draw_circle_object(0.4,  -0.2, (9/1.5) , -0.1  ,'r');
-		draw_circle_object(0.4,  0 , (-10/1.4) , -0.6  ,'g');
-		draw_circle_object(0.4, -0.3 , (-9/1.5) , 0.6  ,'p');
-		draw_circle_object(0.4, -0.5 , (-8/1.6) , -0.5  ,'b');
-		draw_circle_object(0.4, -0.4 , (-7/1.4) , 0  ,'r');
-		draw_circle_object(0.4, -0.2, (-6/1.5) , 0.5  ,'g');
-		draw_circle_object(0.4, -0.4, (-5/1.6) , -0.5  ,'p');
-		draw_circle_object(0.4, -0.1, (-4/1.4) , 0  ,'b');
-		draw_circle_object(0.4,  -0.6, (-3/1.5) , 0.5  ,'r');
-		draw_circle_object(0.4,  0, (-2/1.4) , 0  ,'g');
-		draw_circle_object(0.4,  0.1, (-1/1.5) , 0.5  ,'p');
-		draw_circle_object(0.4,  0.5 , (0/1.4) , 0  ,'b');
-		draw_circle_object(0.4,  0, (1/1.5) , 0.5  ,'r');
-		draw_circle_object(0.4,  -0.6, (2/1.4) , 0  ,'g');
-		draw_circle_object(0.4,  0.4, (3/1.5) , 0.5  ,'p');
-		draw_circle_object(0.4,  0.2, (4/1.6) , -0.5  ,'b');
-		draw_circle_object(0.4,  0.1, (5/1.4) , 0  ,'r');
-		draw_circle_object(0.4,  -0.6, (6/1.5) , 0.5  ,'g');
-		draw_circle_object(0.4,  0.3, (7/1.6) , -0.5  ,'p');
-		draw_circle_object(0.4,  -0.4, (8/1.4) , 0  ,'b');
-		draw_circle_object(0.4,  0.4, (9/1.5) , 0.5  ,'r');
-		draw_circle_object(0.4,  0 , (-10/1.4) , 0.7  ,'g');
-		draw_circle_object(0.4, -0.5 , (-9/1.5) , -0.5  ,'p');
-		draw_circle_object(0.4, 0.2 , (-8/1.6) , -0.5  ,'b');
-		draw_circle_object(0.4, 0.1 , (-7/1.4) , 0.9  ,'r');
-		draw_circle_object(0.4, 0.1, (-6/1.5) , 0.7  ,'g');
-		draw_circle_object(0.4, 0.3, (-5/1.6) , -0.6  ,'p');
-		draw_circle_object(0.4, 0.2, (-4/1.4) , 0.7  ,'b');
-		draw_circle_object(0.4, -0.3, (-3/1.5) , 0.7  ,'r');
-		draw_circle_object(0.4,  0, (-2/1.4) , 0.8  ,'g');
-		draw_circle_object(0.4,  0.1, (-1/1.5) , 0.7  ,'p');
-		draw_circle_object(0.4,  -0.2 , (0/1.4) , 0.5  ,'b');
-		draw_circle_object(0.4,  0.2, (1/1.5) , 0.7  ,'r');
-		draw_circle_object(0.4,  0.1, (2/1.4) , 0.4  ,'g');
-		draw_circle_object(0.4,  -0.2, (3/1.5) , 0.7  ,'p');
-		draw_circle_object(0.4,  -0.2, (4/1.6) , -0.3  ,'b');
-		draw_circle_object(0.4,  -0.3, (5/1.4) , 0.5  ,'r');
-		draw_circle_object(0.4,  0.1, (6/1.5) , 0.7  ,'g');
-		draw_circle_object(0.4,  -0.3, (7/1.6) , -0.4  ,'p');
-		draw_circle_object(0.4,  0.4, (8/1.4) , 0.5  ,'b');
-		draw_circle_object(0.4,  0, (9/1.5) , 0.7  ,'r');
-		draw_circle_object(0.4,  0.4 , (-10/1.5) , 0.7  ,'g');
-		draw_circle_object(0.4,  0.4 , (-10/1.7) , 0.4  ,'p');
-		draw_circle_object(0.4,  0.4 , (-10/1.5) , 0.1  ,'b');
-		draw_circle_object(0.4,  0.1 , (-10/1.5) , 0.3  ,'r');
-		draw_circle_object(0.4,  -0.4 , (-10/1.5) , 0  ,'g');
-		draw_circle_object(0.4,  0.2 , (-10/1.5) , -0.2  ,'p');
-		draw_circle_object(0.4,  0 , (-10/1.5) , -0.1  ,'b');
-		draw_circle_object(0.4,  0.2 , (-10/1.5) , 0.1  ,'r');
-		draw_circle_object(0.4, -0.1 , (-9/1.5) , -0.5  ,'g');
-		draw_circle_object(0.4, 0.3 , (-8/1.5) , -0.5  ,'p');
-		draw_circle_object(0.4, 0.3 , (-7/1.5) , 0.9  ,'b');
-		draw_circle_object(0.4, 0.1, (-6/1.5) , 0.7  ,'r');
-		draw_circle_object(0.4, 0.5, (-5/1.5) , -0.6  ,'g');
-		draw_circle_object(0.4, 0.6, (-4/1.5) , 0.7  ,'p');
-		draw_circle_object(0.4, -0.4, (-3/1.5) , 0.7  ,'b');
-		draw_circle_object(0.4,  0.4, (-2/1.5) , 0.8  ,'r');
-		draw_circle_object(0.4,  0.5, (-1/1.5) , 0.7  ,'g');
-		draw_circle_object(0.4,  0 , (0/1.5) , 0.5  ,'p');
-		draw_circle_object(0.4,  0, (1/1.5) , 0.7  ,'b');
-		draw_circle_object(0.4,  0, (2/1.5) , 0.4  ,'r');
-		draw_circle_object(0.4,  0.2, (3/1.5) , 0.7  ,'g');
-		draw_circle_object(0.4,  0.2, (4/1.5) , -0.3  ,'p');
-		draw_circle_object(0.4,  0.3, (5/1.5) , 0.5  ,'b');
-		draw_circle_object(0.4,  -0.1, (6/1.5) , 0.7  ,'r');
-		draw_circle_object(0.4,  0.3, (7/1.5) , -0.4  ,'g');
-		draw_circle_object(0.4,  -0.4, (8/1.5) , 0.5  ,'p');
-		draw_circle_object(0.4,  -0.3, (9/1.5) , 0.7  ,'r');
-		draw_circle_object(0.4,  -0.3, (-10/1.5) , 0.7  ,'g');
-		draw_circle_object(0.4,  -0.3, (-10/1.5) , 0.5  ,'p');
-		draw_circle_object(0.4,  -0.3, (-10/1.5) , -0.7  ,'r');
-		draw_circle_object(0.4,  -0.3, (-8/1.5) , 0.5  ,'g');
-		draw_circle_object(0.4,  -0.3, (-8/1.5) , -0.7  ,'p');
-		draw_circle_object(0.4,  -0.3, (-7/1.5) , 0.2  ,'b');
-		draw_circle_object(0.4,  -0.3, (-8/1.5) , -0.4  ,'r');
-		draw_circle_object(0.4,  -0.3, (-8/1.5) , 0.1  ,'g');
-		draw_circle_object(0.4,  -0.3, (-8/1.5) , -0.3  ,'p');
-		draw_circle_object(0.4,  0.5, (-8/1.5) , 0.1  ,'b');
-		draw_circle_object(0.4,  0.1, (-8/1.3) , -0.3  ,'r');
-		draw_circle_object(0.4,  0.4, (-8/1.2) , 0.2  ,'g');
-		draw_circle_object(0.4,  0.2, (-8/1.1) , -0.5  ,'p');
-		draw_circle_object(0.4,  0.3, (-8/1.6) , 0.5  ,'b');
-		draw_circle_object(0.4,  -0.5, (-2/1.9) , 0.1  ,'r');
-		draw_circle_object(0.4,  0.2, (-3/1.7) , -0.3  ,'g');
-		draw_circle_object(0.4,  0.4, (-5/1.8) , 0.2  ,'p');
-		draw_circle_object(0.4,  -0.1, (-6/1.6) , -0.5  ,'b');
-		draw_circle_object(0.4,  0.1, (-1/1.5) , 0.5  ,'r');
-		draw_circle_object(0.4,  0, (-4/2) , 0.1  ,'g');
-		draw_circle_object(0.4,  -0.3, (-6/2.2) , -0.3  ,'p');
-		draw_circle_object(0.4,  -0.2, (-5/2) , 0  ,'b');
-		draw_circle_object(0.4,  0.1, (-4/1.3) , -0.1  ,'r');
-		draw_circle_object(0.4,  0.4, (-7/1.4) , -0.2  ,'g');
-		draw_circle_object(0.4,  0.3, (-5/1.5) , 0.3  ,'p');
-		draw_circle_object(0.4,  -0.1, (-6/1.7) , -0.3  ,'b');
-		draw_circle_object(0.4,  -0.4, (-2/1.2) , 0.1  ,'r');
-		draw_circle_object(0.4,  -0.2, (-4/1.3) , -0.2  ,'g');
-		draw_circle_object(0.4,  -0.3, (-5/1.6) , -0.5  ,'p');
-		draw_circle_object(0.4,  -0.5, (-6/1.6) , -0.2  ,'b');
-		draw_circle_object(0.4,  0.3, (-6/1.6) , 0.3  ,'r');
-		draw_circle_object(0.4,  -0.3, (-6/1.6) , -0.5  ,'g');
-		draw_circle_object(0.4,  -0.5, (-7/1.6) , -0.2  ,'p');
-		draw_circle_object(0.4,  0.3, (-7/1.6) , 0.3  ,'b');
-		draw_circle_object(0.4,  -0.3, (-7/1.6) , -0.5  ,'r');
-		draw_circle_object(0.4,  -0.5, (-8/1.6) , -0.2  ,'g');
-		draw_circle_object(0.4,  0.3, (-8/1.6) , 0.3  ,'p');
-		draw_circle_object(0.4,  -0.3, (-8/1.6) , -0.5  ,'b');
-		draw_circle_object(0.4,  -0.5, (-4/1.6) , -0.2  ,'r');
-		draw_circle_object(0.4,  0.3, (-4/1.6) , 0.3  ,'g');
-		draw_circle_object(0.4,  -0.3, (-4/1.6) , -0.5  ,'p');
-		draw_circle_object(0.4,  -0.5, (-4/1.6) , -0.2  ,'b');
-		draw_circle_object(0.4,  0.3, (-4/1.6) , 0.3  ,'r');
-		draw_circle_object(0.4,  -0.3, (-4/1.6) , -0.5  ,'g');
-		draw_circle_object(0.4,  -0.5, (-5/1.6) , -0.2  ,'p');
-		draw_circle_object(0.4,  0.3, (-5/1.6) , 0.3  ,'b');
-		draw_circle_object(0.4,  -0.3, (-5/1.6) , -0.5  ,'r');
-		for(int i = -3 ; i < 10 ; i++){
-			draw_circle_object(0.4,  -0.5, (-i/1.6) , -0.2  ,'r');
-			draw_circle_object(0.4,  0.3, (-i/1.4) , 0.3  ,'g');
-			draw_circle_object(0.4,  -0.3, (-i/1.5) , -0.5  ,'p');
-		}
-		draw_circle_object(0.4,  -0.3, (5/1.6) , 0  ,'r');
-		draw_circle_object(0.4,  0.1, (5/1.6) , 0.1  ,'g');
-		draw_circle_object(0.4,  0, (5/1.6) , -0.2  ,'p');
-		draw_circle_object(0.4,  -0.5, (4/1.6) , -0.2  ,'b');
-		draw_circle_object(0.4,  0.3, (4/1.6) , 0.3  ,'r');
-		draw_circle_object(0.4,  -0.3, (4/1.6) , -0.5  ,'g');
-		draw_circle_object(0.4,  -0.5, (8/1.6) , -0.2  ,'p');
-		draw_circle_object(0.4,  0.3, (8/1.6) , 0.3  ,'b');
-		draw_circle_object(0.4,  -0.3, (8/1.6) , -0.5  ,'r');
-		draw_circle_object(0.4,  -0.2, (8/1.4) , -0.2  ,'g');
-		draw_circle_object(0.4,  0.4, (8/1.2) , 0.3  ,'p');
-		draw_circle_object(0.4,  -0.5, (8/1.5) , -0.5  ,'b');
-		draw_circle_object(0.4,  -0.5, (8/1.5) , -0.3  ,'r');
-		draw_circle_object(0.4,  0.3, (8/1.6) , 0.4  ,'g');
-		draw_circle_object(0.4,  -0.3, (8/1.4) , 0  ,'p');
-		draw_circle_object(0.4,  -0.5, (8/1.4) , -0.1  ,'b');
-		draw_circle_object(0.4,  0.3, (8/1.3) , 0.5  ,'r');
-		draw_circle_object(0.4,  -0.3, (8/1.5) , -0.4  ,'g');
-		draw_circle_object(0.4,  -0.5, (8/1.7) , 0.3  ,'p');
-		draw_circle_object(0.4,  0.3, (8/1.6) , -0.3  ,'b');
-		draw_circle_object(0.4,  -0.3, (8/1.4) , 0  ,'r');
-		draw_circle_object(0.4,  -0.5, (6/1.9) , -0.2  ,'g');
-		draw_circle_object(0.4,  0.3, (6/1.8) , 0.3  ,'p');
-		draw_circle_object(0.4,  -0.3, (6/1.7) , -0.5  ,'r');
-		draw_circle_object(0.4,  -0.2, (6/1.9) , 0.2  ,'g');
-		draw_circle_object(0.4,  0.4, (6/1.8) , 0.1  ,'p');
-		draw_circle_object(0.4,  0.2, (6/1.7) , -0.3  ,'b');
-		draw_circle_object(0,  0.2, (6/1.7) , -0.3  ,'w');
-	}
+
+float getY(){
+	static int i=0;
+	float a[]={-0.5,0.0,0.5};
+	i++;
+	return a[i%3];
 }
 
+float getRGB(){
+	static int i=0;
+	float a[]={-0.1,0.0,0.1};
+	i++;
+	return a[i%30];
+}
+
+void drawModel(int mode) {
+  if(mode==0)
+    {
+  for(unsigned int i =0;i<dnasequence.length();i++)
+    {
+      glRotatef(nangle,0.0f,0.0f,1.0f);
+      glTranslatef(0.0f,0.0f,ndistance);
+      // draw a pyramid (in smooth coloring mode)
+
+      glPushMatrix();
+      glTranslatef(-hdistance,0.0f,0.0f);
+      colorpicker(dnasequence[i]);
+      glutSolidSphere(nradius, 100, 100);
+      GLUquadricObj *p = gluNewQuadric();
+      gluQuadricDrawStyle(p,GLU_LINE);
+      glPushMatrix();
+      glRotatef(90,0.0,1.0f,0.0f );
+      setupmaterial(0.0f,0.4f,0.6f);
+      gluCylinder(p,hradius,hradius,2*hdistance,100,100);
+      glPopMatrix();
+
+   
+      glTranslatef(2*hdistance,0.0f,0.0f);
+      colorpicker(compliment(dnasequence[i]));
+      glutSolidSphere(nradius, 100, 100);
+      glPopMatrix();
+
+      setupmaterial(0.0f,1.0f,1.0f);
+      glLineWidth(5.0f);
+      glBegin(GL_LINES);
+      glVertex3f(hdistance,0.0f,0.0f);
+      glVertex3f(hdistance*cos(nangle *PIby180),hdistance*sin(nangle *PIby180),ndistance);
+
+
+      glVertex3f(-hdistance,0.0f,0.0f);
+      glVertex3f(-hdistance*cos(nangle *PIby180),-hdistance*sin(nangle *PIby180),ndistance);
+      
+      
+      glEnd();
+    }
+	} else if (mode==1) {
+        
+		for(int i=0;i<dnasequence.length();i+=1){
+			char acid=dnasequence[i];
+			switch(acid){
+				case 'A':
+				case 'a':
+				draw_circle_object(0.4, 0.2 , i/1.5 , getY()  ,'p');
+				draw_circle_object(0.4, 0.3,   i/1.5 , getY()  ,'g');
+				draw_circle_object(0.4, -1 ,  i/1.5 ,getY() ,'y');
+				draw_circle_object(0.4, 1, i/1.5,getY()  ,'y');
+				break;
+			case 'T':
+			case 't':
+				draw_circle_object(0.4, 0.2,   i/1.5, getY()  ,'g');
+				draw_circle_object(0.4, 0.3 ,   i/1.5, getY()  ,'p');
+				draw_circle_object(0.4, -1 ,   i/1.5, getY() ,'y');
+				draw_circle_object(0.4, 1,   i/1.5, getY()  ,'y');
+				break;
+			case 'G':
+			case 'g':
+				draw_circle_object(0.4,  0.1,  i/1.5, getY()   ,'r');
+				draw_circle_object(0.4,  0.2,  i/1.5, getY()   ,'b');
+				draw_circle_object(0.4, -1 ,i/1.5, getY()  ,'y');
+				draw_circle_object(0.4, 1,   i/1.5, getY()  ,'y');
+				break;
+			case 'C':
+			case 'c':
+				draw_circle_object(0.4, 0.4 ,   i/1.5, getY()  ,'b');
+				draw_circle_object(0.4,  0.5 ,   i/1.5, getY()   ,'r');
+				draw_circle_object(0.4, -1 ,   i/1.5, getY()  ,'y');
+				draw_circle_object(0.4, 1,   i/1.5, getY() ,'y');
+				break;
+			}
+		}
+	}
+  else if(mode == 2)
+    {
+	glColor3f(0.0,0.0,0.0);
+		for(int i=0;i<dnasequence.length();i+=1){
+			char acid=dnasequence[i];
+			switch(acid){
+			case 'A':
+				case 'a':
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 1  ,'p');
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 2+0.5  ,'g');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 1  ,'y');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 4  ,'y');
+				break;
+			case 'T':
+				case 't':
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 1  ,'g');
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 2+0.5  ,'p');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 1  ,'y');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 4  ,'y');
+				break;
+			case 'G':
+				case 'g':
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 1  ,'r');
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 2+0.5  ,'b');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 1  ,'y');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 4  ,'y');
+				break;
+			case 'C':				
+			case 'c':
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 1  ,'b');
+				draw_cylinder_object(0.2, 0 , (2*i/1.5) , 2+0.5  ,'r');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 1  ,'y');
+				draw_cylinder_object(0.3, 0 , (2*i/1.5)+0.5 , 4  ,'y');
+				break;
+			}
+	
+    }
+}
+}
 void renderBitmapString(float x, float y, float z, void *font, char *string) {
 	char *c;
 	glRasterPos3f(x, y,z);
 	for (c=string; *c != '\0'; c++) {
-		glutBitmapCharacter(font, *c);
+      glColor3f(0.0,1.0,1.0);
+      glutBitmapCharacter(font, *c);
 	}
 }
 
 void drawScene() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glutFullScreen();
-	initLight(20);
+ 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //	glutFullScreen();
+    initLight(2 );
 	int mode=0;
     if(primitive == 1){
        glutPostRedisplay();
@@ -539,11 +573,14 @@ void drawScene() {
     else if(primitive == 3){
        mode=1;
     }
+    else if (primitive == 4)
+    {
+    	mode = 2;
+    }
     else if(primitive == 5) {
        exit(0);
     }
 
-	glColor3f(0.0,1.0,1.0);
     renderBitmapString(-11, -7, 0, GLUT_BITMAP_8_BY_13, menu1);
     renderBitmapString(-11, -8, 0, GLUT_BITMAP_8_BY_13, menu2);
     renderBitmapString(-11, -9, 0, GLUT_BITMAP_8_BY_13, menu3);
@@ -557,7 +594,6 @@ void drawScene() {
 	renderBitmapString(9, -1, 0, GLUT_BITMAP_8_BY_13, text6);
     renderBitmapString(18, -11, 0, GLUT_BITMAP_9_BY_15, text0);
 
-	glColor3f(0.60,0.40,0.70);
 	renderBitmapString(9, -2, 0, GLUT_BITMAP_8_BY_13,"Right Click For Advanced Options/Modes ");
 
 
@@ -650,7 +686,22 @@ void update(int value) {
 }
 
 int main(int argc, char** argv) {
-	glutInit(&argc, argv);
+
+
+  ifstream myfile;
+  myfile.open("dna.txt");
+  if (myfile.is_open())
+    {
+      myfile >> dnasequence;
+    }
+  else
+    {
+      cout<<endl<<"Dna sequence file dna.txt not found";
+      exit(1);
+    }
+
+
+  glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("DNA Structure");
